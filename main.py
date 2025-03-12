@@ -22,9 +22,22 @@ client = OpenAI(
 # Apply custom CSS for the sidebar
 set_sidebar_css()
 
+predefined_colors = {
+    "Red": "#FF6347",
+    "Green": "#32CD32",
+    "Blue": "#1E90FF",
+    "Purple": "#8A2BE2",
+    "Orange": "#FFA500",
+    "Yellow": "#FFD700",
+    "Pink": "#FF1493",
+    "Black": "#000000",  # Black color
+    "White": "#FFFFFF" 
+}
+
 # Step 1: Display custom sidebar components with colors and font options
 st.sidebar.subheader("🎨 Customize Your Logo")
-logo_color = st.sidebar.color_picker("Pick a logo color", "#FF6347")
+selected_color_name = st.sidebar.selectbox("Pick a logo color", list(predefined_colors.keys()))
+logo_color = selected_color_name
 font_options = ["Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana"]
 font_style = st.sidebar.selectbox("Select logo font", font_options)
 st.sidebar.write(f"### Selected Logo Color: {logo_color}")
@@ -104,8 +117,8 @@ if st.session_state["button_clicked"] == "generate_refinement":
 if st.session_state["button_clicked"] == "generate_logo":
     product_name = st.session_state["product_description"].split()[0]
     st.session_state["generated_logo"] = generate_logo(st.session_state["product_description"],
-                                                        logo_color="#008000",
-                                                        font_style="Arial",
+                                                        logo_color,
+                                                        font_style,
                                                         max_width=300)
     st.session_state["button_clicked"] = None
 
