@@ -27,7 +27,8 @@ def generate_logo(product_name, logo_color, font_style="Arial", max_width=300):
     prompt = f"""
     Create a minimalist and sophisticated logo for a product named '{product_name}'. 
     The logo should feature the product name '{product_name}' prominently displayed in the center.
-    The logo has to use the font style '{font_description}' and the **exact** color '{logo_color}'.
+    The logo must use the **exact** color '{logo_color}' as specified, with no variations or deviations in shade.
+    The logo has to use the font style '{font_description}'.
     Use a subtle geometric shape (e.g., thin circle or rounded rectangle) to frame the product name.
     The design should have a clean, modern, and professional look with a light or transparent background.
     Avoid gradients, complex illustrations, and ensure the design is simple and recognizable.

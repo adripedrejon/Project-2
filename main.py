@@ -1,7 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 from imageGeneration import generate_logo
-from utils import validate_product_description, set_sidebar_css
+from utils import validate_product_description, set_sidebar_css, set_custom_css
 
 with st.sidebar:
     openai_api_key = st.text_input("Enter Your API Key", key="chatbot_api_key", type="password")
@@ -20,6 +20,7 @@ client = OpenAI(
 )
 
 # Apply custom CSS for the sidebar
+set_custom_css()
 set_sidebar_css()
 
 predefined_colors = {
@@ -141,6 +142,7 @@ if st.session_state["marketing_responses"]:
             st.session_state["button_clicked"] = "generate_ideas"
             st.rerun()
     with col3:
-        if st.button("Restart App"):
-            st.session_state.clear()
+        if st.button("New Logo"):
+            st.session_state["generated_logo"] = None  # Clear the current logo
+            st.session_state["button_clicked"] = "generate_logo"  # Trigger new logo generation
             st.rerun()
