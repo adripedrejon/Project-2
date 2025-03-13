@@ -1,7 +1,8 @@
 import streamlit as st
 from openai import OpenAI
-from imageGeneration import generate_logo
+from imageGeneration import generate_logo, image_to_base64
 from utils import validate_product_description, set_sidebar_css, set_custom_css
+import urllib.parse
 
 with st.sidebar:
     openai_api_key = st.text_input("Enter Your API Key", key="chatbot_api_key", type="password")
@@ -55,9 +56,12 @@ if "marketing_responses" not in st.session_state:
     st.session_state["marketing_responses"] = []
 if "generated_logo" not in st.session_state:
     st.session_state["generated_logo"] = None
+if "new_product_idea" not in st.session_state:
+    st.session_state["new_product_idea"] = False  # Flag to show new product idea input
+
 
 # Step 1: Product description input
-if not st.session_state["product_description"]:
+if not st.session_state["product_description"] and not st.session_state["new_product_idea"]:
     product_description = st.text_area(
         "Describe your product:",
         value="",
@@ -70,6 +74,16 @@ if not st.session_state["product_description"]:
             st.session_state["product_description"] = product_description
             st.session_state["messages"].append({"role": "user", "content": product_description})
             st.session_state["button_clicked"] = "generate_ideas"
+
+if st.session_state["new_product_idea"]:
+    product_description = st.text_area("Enter a new product description:", key="new_product_idea_desc")
+    if st.button("Submit New Idea"):
+        if not validate_product_description(product_description):
+            st.error("The description seems unclear or nonsensical. Please provide a valid product idea.")
+        else:
+            st.session_state["product_description"] = st.session_state["new_product_idea_desc"]
+            st.session_state["new_product_idea"] = False
+            st.session_state["button_clicked"] = "generate_ideas"  
 
 # Step 2: Generate marketing ideas (DeepSeek)
 if st.session_state["button_clicked"] == "generate_ideas":
@@ -94,7 +108,7 @@ if st.session_state["button_clicked"] == "generate_ideas":
 # Step 3: Refine marketing plan (DeepSeek again)
 if st.session_state["button_clicked"] == "generate_refinement":
     deepseek_refine_prompt = f"""
-    Refine and expand the marketing strategy for the following product. Ensure the response follows this structured format:
+    Refine and expand the marketing strategy for the following product. Ensure the response follows strictly this structured format:
     1. **Product Name**: A catchy and creative name.
     2. **Target Audience**: Describe the ideal customer in detail, including demographics, interests, and pain points.
     3. **Marketing Ideas**: Provide at least three creative and actionable strategies that align with the product's strengths and audience preferences.
@@ -127,15 +141,67 @@ if st.session_state["button_clicked"] == "generate_logo":
 if st.session_state["marketing_responses"]:
     st.write("### 📢 Marketing Plans")
     st.write(st.session_state["marketing_responses"][-1])
+
     if st.session_state["generated_logo"]:
         st.write("### 🎨 Suggested Logo Concept")
-        st.image(st.session_state["generated_logo"], caption="Generated Logo")
+        logo = st.session_state["generated_logo"]
+        
+        # Use columns to display logo on the left and button on the right
+        col1, col2 = st.columns([3, 1])  # Adjust the width ratio to your preference
+        with col1:
+            # Display the logo on the left side
+            st.image(logo, caption="Generated Logo")
+
+        with col2:
+            # Convert the logo image to base64 for download
+            logo_base64 = image_to_base64(logo)
+            download_link = f'''
+                    <a href="data:file/png;base64,{logo_base64}" download="generated_logo.png">
+                        <button style="
+                            background-color: #4CAF50; 
+                            color: white; 
+                            border: none; 
+                            padding: 6px 12px;  /* Smaller padding */
+                            text-align: center; 
+                            font-size: 12px;  /* Smaller font size */
+                            cursor: pointer; 
+                            border-radius: 5px;
+                            margin-top: 100px;  /* Adjusted margin-top to align the button */
+                        ">Download Logo</button>
+                    </a>
+                '''
+            st.markdown(download_link, unsafe_allow_html=True)
+    #Twitter Share Buttons
+    share_text = "Check out this AI-generated logo and marketing strategy! 🚀"
+    share_url = "https://yourstreamlitapp.com"  # Replace with your actual app URL
+
+    encoded_text = urllib.parse.quote(share_text)
+    encoded_url = urllib.parse.quote(share_url)
+
+    # Twitter (X) Share Link
+    twitter_link = f"https://twitter.com/intent/tweet?text={encoded_text}&url={encoded_url}"
+
+    st.markdown(
+        f"""
+            </a>
+            <a href="{twitter_link}" target="_blank">
+                <button style="background-color: #1DA1F2; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 5px;">
+                    🐦 Share on Twitter
+                </button>
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     # Next steps buttons
     st.write("What would you like to do next?")
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("New Product Idea"):
-            st.session_state.clear()
+            st.session_state["new_product_idea"] = True
+            st.session_state["product_description"] = ""
+            st.session_state["marketing_responses"] = []
+            st.session_state["messages"] = []
             st.rerun()
     with col2:
         if st.button("New Marketing Plan"):

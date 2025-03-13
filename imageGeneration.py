@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageColor
 from io import BytesIO
 import streamlit as st
 import numpy as np
+import base64
 
 HUGGING_TOKEN = ""
 API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
@@ -48,3 +49,9 @@ def generate_logo(product_name, logo_color, font_style="Arial", max_width=300):
     except requests.exceptions.RequestException as e:
         print(f"Error generating logo: {e}")
         return None
+
+def image_to_base64(img):
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
