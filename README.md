@@ -29,10 +29,12 @@ Follow these steps to set up and run the application locally:
 3. Navigate to the project folder:
    cd Project-2
 4. Enter your API key in main.py:
-   client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key="ENTER_YOUR_API_KEY_HERE",
-)
+   api_key = ""
+5. Enter your HUGGING FACE KEY in imageGeneration.py:
+   HUGGING_TOKEN = ""
+
+# Set the OpenAI API key
+openai.api_key = api_key
 5. Run the application using Streamlit:
    streamlit run main.py
 6. Enter your API key in the sidebar of the application to authenticate and use the AI services.
