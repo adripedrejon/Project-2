@@ -9,7 +9,7 @@ import urllib.parse
 # App title
 st.title("MarketMind 🔥 - Your Marketing Strategy Partner")
 
-api_key = "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"
+api_key = "" #Insert your Key
 
 # Set the OpenAI API key
 openai.api_key = api_key
