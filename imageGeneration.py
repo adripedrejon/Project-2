@@ -7,7 +7,7 @@ import numpy as np
 import base64
 import os
 
-HUGGING_TOKEN = "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"
+HUGGING_TOKEN = "" # Insert your KEY
 API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
 
 
