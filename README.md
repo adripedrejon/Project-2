@@ -32,12 +32,8 @@ Follow these steps to set up and run the application locally:
    api_key = ""
 5. Enter your HUGGING FACE KEY in imageGeneration.py:
    HUGGING_TOKEN = ""
-
-# Set the OpenAI API key
-openai.api_key = api_key
-5. Run the application using Streamlit:
+6. Run the application using Streamlit:
    streamlit run main.py
-6. Enter your API key in the sidebar of the application to authenticate and use the AI services.
 
 
 Enjoy using the AI Marketing Strategy Creator!
