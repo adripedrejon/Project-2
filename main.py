@@ -1,24 +1,18 @@
 import streamlit as st
+import openai
 from openai import OpenAI
 from imageGeneration import generate_logo, image_to_base64
 from utils import validate_product_description, set_sidebar_css, set_custom_css
 import urllib.parse
 
-with st.sidebar:
-    openai_api_key = st.text_input("Enter Your API Key", key="chatbot_api_key", type="password")
 
 # App title
 st.title("MarketMind 🔥 - Your Marketing Strategy Partner")
 
-# Ensure API key is provided
-if not openai_api_key:
-    st.warning("Please enter your OpenAI API key in the sidebar to continue.")
-    st.stop()
+api_key = "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"
 
-client = OpenAI(
- base_url="https://openrouter.ai/api/v1",
- api_key="",
-)
+# Set the OpenAI API key
+openai.api_key = api_key
 
 # Apply custom CSS for the sidebar
 set_custom_css()
@@ -85,47 +79,49 @@ if st.session_state["new_product_idea"]:
             st.session_state["new_product_idea"] = False
             st.session_state["button_clicked"] = "generate_ideas"  
 
-# Step 2: Generate marketing ideas (DeepSeek)
+# Step 2: Generate marketing ideas (gpt-40-mini)
 if st.session_state["button_clicked"] == "generate_ideas":
-    deepseek_prompt = f"""
-    You are a creative marketing assistant. Based on the product description, generate a marketing strategy with:
+    mini_prompt = f"""
+    You are a creative marketing assistant. Based on the product description, generate a marketing strategy with strictly these four points:
     1. **Product Name**: A catchy and creative name.
     2. **Target Audience**: Describe the ideal customer.
     3. **Marketing Ideas**: At least 3 creative strategies.
     4. **Slogan**: A short, persuasive tagline.
     **Product Description**: {st.session_state['product_description']}
     """
-    response_ds1 = client.chat.completions.create(
-        model="mistralai/pixtral-12b",
-        messages=[{"role": "system", "content": deepseek_prompt}]
+    response_ds1 = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "system", "content": mini_prompt}]
     )
-    deepseek_response = response_ds1.choices[0].message.content
-    if deepseek_response:
-        st.session_state["messages"].append({"role": "assistant", "content": deepseek_response})
-        st.session_state["marketing_responses"].append(deepseek_response)
+    mini_response = response_ds1.choices[0].message.content
+    if mini_response:
+        st.session_state["messages"].append({"role": "assistant", "content": mini_response})
+        st.session_state["marketing_responses"].append(mini_response)
     st.session_state["button_clicked"] = "generate_refinement"
 
-# Step 3: Refine marketing plan (DeepSeek again)
+# Step 3: Refine marketing plan (gpt 3.5 turbo)
 if st.session_state["button_clicked"] == "generate_refinement":
-    deepseek_refine_prompt = f"""
+    gpt_refine_prompt = f"""
     Refine and expand the marketing strategy for the following product. Ensure the response follows strictly this structured format:
     1. **Product Name**: A catchy and creative name.
     2. **Target Audience**: Describe the ideal customer in detail, including demographics, interests, and pain points.
     3. **Marketing Ideas**: Provide at least three creative and actionable strategies that align with the product's strengths and audience preferences.
     4. **Slogan**: A short, persuasive tagline that effectively communicates the product's unique value.
     **Product Description**: {st.session_state['product_description']}
-    **Current Marketing Plan (DeepSeek Output)**:
+    **Current Marketing Plan**:
     {st.session_state['marketing_responses']}
-    Enhance the strategy by making it more detailed, engaging, and compelling. Use persuasive language, highlight key selling points, and ensure all sections are well-structured and insightful. Keep just your plan.
+    Enhance the strategy by making it more detailed, engaging, and compelling. Use persuasive language, highlight key selling points, and ensure all sections are well-structured and insightful. Keep just your plan and respect the format.
     """
-    response_ds2 = client.chat.completions.create(
-        model="deepseek/deepseek-r1:free",
-        messages=[{"role": "system", "content": deepseek_refine_prompt}]
+
+    response_ds2 = openai.chat.completions.create(
+        model="gpt-3.5-turbo",  # Correct chat model
+        messages=[{"role": "user", "content": gpt_refine_prompt}]  # Use 'messages' with role
     )
-    deepseek_refined_response = response_ds2.choices[0].message.content
-    if deepseek_refined_response:
-        st.session_state["messages"].append({"role": "assistant", "content": deepseek_refined_response})
-        st.session_state["marketing_responses"].append(f"**Refined Plan:**\n\n{deepseek_refined_response}")
+
+    gpt_refined_response = response_ds2.choices[0].message.content
+    if gpt_refined_response:
+        st.session_state["messages"].append({"role": "assistant", "content": gpt_refined_response})
+        st.session_state["marketing_responses"].append(f"**Refined Plan:**\n\n{gpt_refined_response}")
     st.session_state["button_clicked"] = "generate_logo"
 
 # Step 4: Generate logo (using your function)
@@ -212,3 +208,4 @@ if st.session_state["marketing_responses"]:
             st.session_state["generated_logo"] = None  # Clear the current logo
             st.session_state["button_clicked"] = "generate_logo"  # Trigger new logo generation
             st.rerun()
+
